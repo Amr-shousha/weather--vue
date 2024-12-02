@@ -93,7 +93,11 @@ const fetchImage = async () => {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.search-bar {
+  color: aliceblue;
+}
+</style>
 // Watch for changes in searchQuery and trigger fetchImage watch(searchQuery,
 async (newQuery, oldQuery) => { console.log("Search query changed from:",
 oldQuery, "to:", newQuery); if (newQuery) { fetchImage(); // Fetch new image if
