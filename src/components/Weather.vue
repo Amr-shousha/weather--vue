@@ -352,7 +352,7 @@ const getCelsiusLike = computed(() => {
         padding: 10px 10px 10px 10px;
         color: rgb(163, 163, 163);
         background-color: rgba(30, 30, 30, 0.852);
-        //width: 190px;
+        height: 170px;
         p {
           margin: 0;
         }
@@ -368,6 +368,7 @@ const getCelsiusLike = computed(() => {
       }
     }
     .main-temp {
+      width: 50%;
       #main-deg {
         margin-top: 10px;
         border-radius: 10px;
