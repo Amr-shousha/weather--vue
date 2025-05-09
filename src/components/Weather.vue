@@ -190,7 +190,7 @@ const CitySuggestions = ref([]); // This will hold all the location suggestions
 const getCityDetails = async (formattedCityName) => {
   try {
     const res = await fetch(
-      `http://api.openweathermap.org/geo/1.0/direct?q=${CityName.value}&limit=5&appid=${APIKey}`
+      `https://api.openweathermap.org/geo/1.0/direct?q=${CityName.value}&limit=5&appid=${APIKey}`
     );
 
     if (!res.ok) {
