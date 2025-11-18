@@ -1,105 +1,71 @@
 <template>
   <div>
-    <div class="search-bar">
-      <!-- <input
-        v-model="searchQuery"
-        @keyup.enter="fetchImage"
-        placeholder="Search for a photo (e.g., mountains)"
-      /> -->
-      <!-- <button @click="fetchImage">Search</button> -->
-    </div>
+    <div v-if="loading">Loading...</div>
+
     <div v-if="image?.urls?.small" class="photo">
       <img
         :src="image.urls.small"
         :alt="image.alt_description || 'City Image'"
       />
     </div>
-    {{ searchQuery }}
+
+    <p>{{ searchQuery }}</p>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, watch, defineEmits } from "vue";
+import { ref, watch } from "vue";
 
 const props = defineProps({
-  search: {
-    type: String,
-  },
+  search: String,
 });
 
-const searchQuery = ref(); // Store the search keyword
-const image = ref();
-// Store the fetched image
-const loading = ref(false); // Loading state
-const emit = defineEmits(["imgLink"]);
-
-watch(
-  () => props.search,
-  (newSearch) => {
-    searchQuery.value = `${newSearch} City`; // Sync props.search with searchQuery
-  }
-);
-// Watch for changes in searchQuery and trigger fetchImage
-
-watch(searchQuery.value, async (newQuery, oldQuery) => {
-  console.log("Search query changed from:", oldQuery, "to:", newQuery);
-
-  if (newQuery) {
-    try {
-      await fetchImage(); // Call the async fetchImage function
-      // Optionally reset searchQuery if needed:
-
-      // Example of emitting the image URL if needed:
-      // if (image.value.urls?.small) {
-      //   emit("imgLink", image.value.urls.small);
-      // }
-    } catch (error) {
-      console.error("Error fetching image:", error);
-    }
-  }
-});
-
+const image = ref(null);
+const loading = ref(false);
 const accessKey = "ZWVkEFBgg7hxIxiajoHay61lTRO08SoeHdhdlKnSgqM";
 
-// Function to fetch a single image
 const fetchImage = async () => {
-  if (!searchQuery.value.trim()) {
-    // alert("Please enter a keyword to search.");
-    return;
-  }
+  if (!props.search) return;
 
-  loading.value = true; // Set loading state to true
+  loading.value = true;
   try {
-    const response = await fetch(
+    const res = await fetch(
       `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
-        searchQuery.value
+        props.search + " City"
       )}&client_id=${accessKey}`
     );
-
-    // Check if the response is OK
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    // Get the first image result
+    const data = await res.json();
     image.value = data.results[0] || null;
-  } catch (error) {
-    console.error("Error fetching image:", error);
+  } catch (err) {
+    console.error(err);
   } finally {
-    loading.value = false; // Reset loading state
+    loading.value = false;
   }
 };
+
+// Watch prop search فقط، بدون أي input آخر
+watch(
+  () => props.search,
+  (newCity) => {
+    if (newCity) {
+      fetchImage();
+    }
+  },
+  { immediate: true } // fetch أول مرة فور وجود اسم المدينة
+);
 </script>
 
 <style lang="scss" scoped>
 .search-bar {
-  color: aliceblue;
+  margin-bottom: 1rem;
+  input {
+    padding: 0.5rem;
+    margin-right: 0.5rem;
+  }
+}
+.photo img {
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 </style>
-// Watch for changes in searchQuery and trigger fetchImage watch(searchQuery,
-async (newQuery, oldQuery) => { console.log("Search query changed from:",
-oldQuery, "to:", newQuery); if (newQuery) { fetchImage(); // Fetch new image if
-searchQuery changes //searchQuery.value = null; // if (image.value.urls?.small)
-{ // emit("imgLink", image.value.urls.small); // Emit the image URL // } } });

@@ -31,7 +31,7 @@
       </div>
     </div>
     <div
-      v-if="selectedCity"
+      v-if="selectedCity.name"
       class="main-container container d-flex align-items-stretch justify-content-center"
     >
       <div
@@ -99,7 +99,7 @@
               <h7>pressure</h7>
             </div>
 
-            <p class="num">{{ weatherData.temp.pressure }} inHg</p>
+            <p class="num">{{ weatherData.temp?.pressure }} inHg</p>
             <p class="dis">typically can not feel air pressure</p>
           </div>
         </div>
@@ -145,7 +145,7 @@
               <div
                 class="wind-num d-flex align-items-center justify-content-between"
               >
-                <p>{{ weatherData.wind.wind_speed }}</p>
+                <p>{{ weatherData.wind?.wind_speed }}</p>
                 <div class="d-flex flex-column align-items-start">
                   <span>MPH</span>
                   <p>Speed</p>
@@ -154,7 +154,7 @@
               <div
                 class="wind-num d-flex align-items-center justify-content-between"
               >
-                <p>{{ weatherData.wind.wind_deg }}</p>
+                <p>{{ weatherData.wind?.wind_deg }}</p>
                 <div class="d-flex flex-column align-items-start">
                   <span>°</span>
                   <p>Degree</p>
@@ -168,109 +168,103 @@
         </div>
       </div>
     </div>
-    {{ selectedCity }}
-    <CityImage id="CityImg" :search="selectedCity.name" />
+    <CityImage
+      id="CityImg"
+      v-if="selectedCity.name"
+      :search="selectedCity?.name"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { ref, computed } from "vue";
 import CityImage from "./CityImage.vue";
 
+// ---- Reactive State ----
 const CityName = ref("");
-const CityData = ref({});
-const selectedCity = ref("");
+const CitySuggestions = ref([]);
+const selectedCity = ref({ name: "", lat: 0, lon: 0, country: "" });
 const weatherData = ref({});
+const cityImageName = ref(""); // اسم المدينة اللي هنبعته لـ CityImage
 
+// ---- API Key ----
 const APIKey = "220dcae415dac2f2b672bab67ab28160";
 
-const formattedCityName = decodeURIComponent(CityName.value);
-const CitySuggestions = ref([]); // This will hold all the location suggestions
+// ---- Get City Suggestions ----
+const getCityDetails = async () => {
+  if (!CityName.value.trim()) return;
 
-const getCityDetails = async (formattedCityName) => {
   try {
     const res = await fetch(
       `https://api.openweathermap.org/geo/1.0/direct?q=${CityName.value}&limit=5&appid=${APIKey}`
     );
-
-    if (!res.ok) {
-      throw new Error(`API Error: ${res.status} - ${res.statusText}`);
-    }
-
+    if (!res.ok) throw new Error(`API Error: ${res.status}`);
     const locations = await res.json();
-    if (locations.length > 0) {
-      const location = locations[0]; //مهم
-      CitySuggestions.value = locations; // Store all location suggestions
-      // Get the first location from the array
-      CityData.value = {
-        lat: location.lat,
-        lon: location.lon,
-        country: location.country,
-      };
-    } else {
-      throw new Error("Location not found.");
-    }
+    CitySuggestions.value = locations || [];
   } catch (err) {
     alert(err.message);
   }
 };
 
-const getWeatherDetails = async () => {
-  try {
-    const res = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${selectedCity.value.lat}&lon=${selectedCity.value.lon}&appid=${APIKey}`
-    );
-    const weatherDetails = await res.json();
-    weatherData.value = {
-      condition: weatherDetails.weather[0]?.main, //weather is an array. Accessing the first element with weather[0]?. ensures the code won't break if the array is empty or undefined.
-      description: weatherDetails.weather[0]?.description,
-      icon: weatherDetails.weather.icon,
-
-      temp: {
-        current: weatherDetails.main.temp,
-        feels: weatherDetails.main.feels_like,
-        pressure: weatherDetails.main.pressure,
-      },
-      visibility: weatherDetails.visibility,
-      humidity: weatherDetails.main.humidity,
-      wind: {
-        wind_speed: weatherDetails.wind.speed,
-        wind_deg: weatherDetails.wind.deg,
-      },
-    };
-  } catch (err) {
-    alert(`Failed to fetch weather details: ${err.message}`);
-  }
-};
-
-const selectCity = (city) => {
+// ---- Select City ----
+const selectCity = async (city) => {
   selectedCity.value = {
     name: city.name,
     lat: city.lat,
     lon: city.lon,
     country: city.country,
   };
+
   CitySuggestions.value = [];
-  getWeatherDetails();
   CityName.value = "";
-  getCelsiuscurrent();
-  getCelsiusLike();
-  console.log("imgLink");
+
+  // تحديث اسم المدينة للـ CityImage
+  cityImageName.value = selectedCity.value.name;
+
+  await getWeatherDetails();
 };
-const getCelsiusCurrent = computed(() => {
-  if (weatherData.value?.temp?.current) {
-    //? =>It ensures safe access to deeply nested properties by checking if the preceding property exists before trying to access the next one
-    return (weatherData.value.temp.current - 273.15).toFixed(1); // Convert Kelvin to Celsius
+
+// ---- Get Weather Details ----
+const getWeatherDetails = async () => {
+  if (!selectedCity.value) return;
+
+  try {
+    const res = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${selectedCity.value.lat}&lon=${selectedCity.value.lon}&appid=${APIKey}`
+    );
+    const data = await res.json();
+
+    weatherData.value = {
+      condition: data.weather[0]?.main,
+      description: data.weather[0]?.description,
+      temp: {
+        current: data.main.temp,
+        feels: data.main.feels_like,
+        pressure: data.main.pressure,
+      },
+      humidity: data.main.humidity,
+      visibility: data.visibility,
+      wind: {
+        speed: data.wind.speed,
+        deg: data.wind.deg,
+      },
+    };
+  } catch (err) {
+    alert(`Failed to fetch weather: ${err.message}`);
   }
-  return null; // Handle cases where the data isn't ready
-});
-const getCelsiusLike = computed(() => {
-  if (weatherData.value?.temp?.feels) {
-    //? =>It ensures safe access to deeply nested properties by checking if the preceding property exists before trying to access the next one
-    return (weatherData.value.temp.feels - 273.15).toFixed(1); // Convert Kelvin to Celsius
-  }
-  return null; // Handle cases where the data isn't ready
-});
+};
+
+// ---- Computed for Celsius ----
+const getCelsiusCurrent = computed(() =>
+  weatherData.value?.temp?.current
+    ? (weatherData.value.temp.current - 273.15).toFixed(1)
+    : null
+);
+const getCelsiusLike = computed(() =>
+  weatherData.value?.temp?.feels
+    ? (weatherData.value.temp.feels - 273.15).toFixed(1)
+    : null
+);
 </script>
 
 <style lang="scss" scoped>
