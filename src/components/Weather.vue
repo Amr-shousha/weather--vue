@@ -99,7 +99,7 @@
               <h7>pressure</h7>
             </div>
 
-            <p class="num">{{ weatherData.temp?.pressure }} inHg</p>
+            <p class="num">{{ weatherData.temp.pressure }} inHg</p>
             <p class="dis">typically can not feel air pressure</p>
           </div>
         </div>
@@ -145,7 +145,7 @@
               <div
                 class="wind-num d-flex align-items-center justify-content-between"
               >
-                <p>{{ weatherData.wind?.wind_speed }}</p>
+                <p>{{ weatherData.wind.wind_speed }}</p>
                 <div class="d-flex flex-column align-items-start">
                   <span>MPH</span>
                   <p>Speed</p>
@@ -154,7 +154,7 @@
               <div
                 class="wind-num d-flex align-items-center justify-content-between"
               >
-                <p>{{ weatherData.wind?.wind_deg }}</p>
+                <p>{{ weatherData.wind.wind_deg }}</p>
                 <div class="d-flex flex-column align-items-start">
                   <span>°</span>
                   <p>Degree</p>
