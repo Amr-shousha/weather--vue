@@ -30,6 +30,8 @@
         </ul>
       </div>
     </div>
+
+    <!-- Main Weather Data -->
     <div
       v-if="selectedCity.name"
       class="main-container container d-flex align-items-stretch justify-content-center"
@@ -44,7 +46,7 @@
           class="main-data d-flex flex-wrap justify-content-center align-items-center"
         >
           <div class="card">
-            <div class="d-flex align-items-cnter gap-2">
+            <div class="d-flex align-items-center gap-2">
               <img
                 width="30"
                 height="30"
@@ -55,10 +57,10 @@
             </div>
 
             <p class="num">{{ getCelsiusLike }} °C</p>
-            <p class="dis">depends on humedity</p>
+            <p class="dis">depends on humidity</p>
           </div>
           <div class="card">
-            <div class="d-flex align-items-cnter gap-2">
+            <div class="d-flex align-items-center gap-2">
               <img
                 width="30"
                 height="30"
@@ -70,25 +72,25 @@
 
             <p class="num">{{ weatherData.humidity }} %</p>
             <p class="dis">
-              the concentration of water vapor present in the air
+              The concentration of water vapor present in the air
             </p>
           </div>
           <div class="card">
-            <div class="d-flex align-items-cnter gap-2">
+            <div class="d-flex align-items-center gap-2">
               <img
                 width="28"
                 height="28"
                 src="https://img.icons8.com/ios-filled/50/EBEBEB/invisible.png"
-                alt="invisible"
+                alt="visibility"
               />
-              <h7>visibility</h7>
+              <h7>Visibility</h7>
             </div>
 
-            <p class="num">{{ weatherData.visibility }} mi</p>
-            <p class="dis">depends on humedity</p>
+            <p class="num">{{ weatherData.visibility }} m</p>
+            <p class="dis">Depends on humidity</p>
           </div>
           <div class="card">
-            <div class="d-flex align-items-cnter gap-2">
+            <div class="d-flex align-items-center gap-2">
               <img
                 width="30"
                 height="30"
@@ -96,26 +98,27 @@
                 alt="pressure"
               />
 
-              <h7>pressure</h7>
+              <h7>Pressure</h7>
             </div>
 
             <p class="num">{{ weatherData.temp.pressure }} inHg</p>
-            <p class="dis">typically can not feel air pressure</p>
+            <p class="dis">Typically cannot feel air pressure</p>
           </div>
         </div>
       </div>
+
+      <!-- Secondary Weather Data -->
       <div
         class="secondary-weather-data d-flex flex-column justify-content-around"
       >
         <div class="card">
-          <div class="d-flex align-items-cnter gap-2">
+          <div class="d-flex align-items-center gap-2">
             <img
               width="26"
               height="26"
               src="https://img.icons8.com/external-vitaliy-gorbachev-fill-vitaly-gorbachev/60/EBEBEB/external-wind-nature-resource-vitaliy-gorbachev-fill-vitaly-gorbachev.png"
-              alt="external-wind-nature-resource-vitaliy-gorbachev-fill-vitaly-gorbachev"
+              alt="Condition"
             />
-
             <h7>Condition</h7>
           </div>
           <div class="d-flex gap-3">
@@ -123,19 +126,19 @@
             <p>{{ weatherData.condition }}</p>
           </div>
           <div class="d-flex gap-3">
-            <p class="title">description:</p>
+            <p class="title">Description:</p>
             <p>{{ weatherData.description }}</p>
           </div>
         </div>
+
         <div class="card">
-          <div class="d-flex align-items-cnter gap-2">
+          <div class="d-flex align-items-center gap-2">
             <img
               width="26"
               height="26"
               src="https://img.icons8.com/external-vitaliy-gorbachev-fill-vitaly-gorbachev/60/EBEBEB/external-wind-nature-resource-vitaliy-gorbachev-fill-vitaly-gorbachev.png"
-              alt="external-wind-nature-resource-vitaliy-gorbachev-fill-vitaly-gorbachev"
+              alt="Wind"
             />
-
             <h7>Wind</h7>
           </div>
           <div
@@ -145,7 +148,7 @@
               <div
                 class="wind-num d-flex align-items-center justify-content-between"
               >
-                <p>{{ weatherData.wind.wind_speed }}</p>
+                <p>{{ weatherData.wind.speed }}</p>
                 <div class="d-flex flex-column align-items-start">
                   <span>MPH</span>
                   <p>Speed</p>
@@ -154,7 +157,7 @@
               <div
                 class="wind-num d-flex align-items-center justify-content-between"
               >
-                <p>{{ weatherData.wind.wind_deg }}</p>
+                <p>{{ weatherData.wind.deg ?? "N/A" }}</p>
                 <div class="d-flex flex-column align-items-start">
                   <span>°</span>
                   <p>Degree</p>
@@ -168,11 +171,9 @@
         </div>
       </div>
     </div>
-    <CityImage
-      id="CityImg"
-      v-if="selectedCity.name"
-      :search="selectedCity?.name"
-    />
+
+    <!-- City Image Component -->
+    <CityImage id="CityImg" v-if="selectedCity.name" :search="cityImageName" />
   </div>
 </template>
 
@@ -180,17 +181,14 @@
 import { ref, computed } from "vue";
 import CityImage from "./CityImage.vue";
 
-// ---- Reactive State ----
 const CityName = ref("");
 const CitySuggestions = ref([]);
 const selectedCity = ref({ name: "", lat: 0, lon: 0, country: "" });
 const weatherData = ref({});
-const cityImageName = ref(""); // اسم المدينة اللي هنبعته لـ CityImage
+const cityImageName = ref("");
 
-// ---- API Key ----
 const APIKey = "220dcae415dac2f2b672bab67ab28160";
 
-// ---- Get City Suggestions ----
 const getCityDetails = async () => {
   if (!CityName.value.trim()) return;
 
@@ -206,7 +204,6 @@ const getCityDetails = async () => {
   }
 };
 
-// ---- Select City ----
 const selectCity = async (city) => {
   selectedCity.value = {
     name: city.name,
@@ -218,13 +215,11 @@ const selectCity = async (city) => {
   CitySuggestions.value = [];
   CityName.value = "";
 
-  // تحديث اسم المدينة للـ CityImage
   cityImageName.value = selectedCity.value.name;
 
   await getWeatherDetails();
 };
 
-// ---- Get Weather Details ----
 const getWeatherDetails = async () => {
   if (!selectedCity.value) return;
 
@@ -240,12 +235,12 @@ const getWeatherDetails = async () => {
       temp: {
         current: data.main.temp,
         feels: data.main.feels_like,
-        pressure: data.main.pressure,
+        pressure: (data.main.pressure * 0.02953).toFixed(2), // hPa -> inHg
       },
       humidity: data.main.humidity,
       visibility: data.visibility,
       wind: {
-        speed: data.wind.speed,
+        speed: (data.wind.speed * 2.237).toFixed(1), // m/s -> MPH
         deg: data.wind.deg,
       },
     };
@@ -254,7 +249,6 @@ const getWeatherDetails = async () => {
   }
 };
 
-// ---- Computed for Celsius ----
 const getCelsiusCurrent = computed(() =>
   weatherData.value?.temp?.current
     ? (weatherData.value.temp.current - 273.15).toFixed(1)
